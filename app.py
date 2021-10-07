@@ -12,18 +12,20 @@ app = flask.Flask(__name__)
 
 @app.route('/getuserstats', methods=['GET'])
 def get_user_stats():
-    if 'user' in flask.request.args:
-        user = flask.request.args['user']
-    else:
-        flask.abort(404)
-        return
+    username = utilities.get_request_arg(request=flask.request, arg_name='username', arg_type=str, required=True)
+    forked = utilities.get_request_arg(request=flask.request, arg_name='forked', arg_type=bool)
+    if forked is None:
+        forked = False
 
+    repos = []
     user_stats = {
-        'Repositories': utilities.get_total_repositories(user),
-        'TotalStargazers': utilities.get_total_stargazers(user),
-        'TotalForkCount': utilities.get_total_fork_count(user),
-        'AverageRepoSize': utilities.get_average_repo_size(user),
-        'Languages': utilities.get_repo_languages(user),
+        'Username': username,
+        'Forked': forked,
+        'Repositories': utilities.get_total_repositories(username),
+        'TotalStargazers': utilities.get_total_stargazers(repos),
+        'TotalForkCount': utilities.get_total_fork_count(repos),
+        'AverageRepoSize': utilities.get_average_repo_size(repos),
+        'Languages': utilities.get_repo_languages(repos),
     }
     return flask.jsonify(user_stats)
 
