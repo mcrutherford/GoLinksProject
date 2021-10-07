@@ -6,6 +6,7 @@ Created: 10/6/2021 6:02 PM
 import flask
 import requests
 from typing import Optional
+from statistics import mean
 
 
 class Repository:
@@ -14,7 +15,7 @@ class Repository:
     """
     def __init__(self, github_json=None):
         """
-        Instantiate the Repository object. If passed the json from a github api call, it will create all relevant
+        Instantiate the Repository object. If passed the json from a github api call, it will populate all relevant
         fields.
 
         Args:
@@ -37,15 +38,27 @@ class Repository:
         self.forks_count: Optional[int] = github_json['forks_count'] if github_json else None  # TODO What is the difference?
 
         # The languages used in the repo, by number of lines
-        #self.languages = requests.get(github_json['languages_url']).json() if github_json else None
+        self.languages = requests.get(github_json['languages_url']).json() if github_json else None
 
         # The size of the repo, in kilobytes
         self.size: Optional[int] = github_json['size'] if github_json else None
 
     def __str__(self):
+        """
+        Get a string representation of the repository.
+
+        Returns: The repository name
+
+        """
         return self.full_name
 
     def __repr__(self):
+        """
+        Get a detailed representation of the repository.
+
+        Returns: The repository name and ID
+
+        """
         return f'{self.id} {self.full_name}'
 
 
@@ -104,51 +117,35 @@ def get_user_repositories(username: str) -> list[Repository]:
     return repos
 
 
-def get_total_stargazers(repos: list) -> int:
+def get_average_repo_size(repositories: list[Repository]) -> str:
     """
-    Retrieve the total number of stargazers for a list of repositories.
+    Return the average repository size of a list of repositories. Uses 1024 KiB per 1MiB, etc.
 
     Args:
-        repos: The repositories
-
-    Returns: The total number of stargazers
-
-    """
-    return 0
-
-
-def get_total_fork_count(repos: list) -> int:
-    """
-    Return the total number of forks of a list of repositories.
-
-    Args:
-        repos: The repositories
-
-    Returns: The total number of forks
-
-    """
-    return 0
-
-
-def get_average_repo_size(repos: list) -> str:
-    """
-    Return the average repository size of a list of repositories.
-
-    Args:
-        repos: The repositories
+        repositories: The repositories
 
     Returns: The average repository size
 
     """
-    return '0GB'
+    avg_in_kb = mean([repo.size for repo in repositories])
+    avg_in_unit = avg_in_kb
+
+    # Iterate over units to find one where the size is under 1024 of the unit
+    for unit in ["KiB", "MiB", "GiB", "TiB", "PiB"]:
+        if avg_in_unit < 1024.0:
+            return f"{avg_in_unit:3.1f}{unit}"
+        avg_in_unit /= 1024.0
+
+    # Default to KiB if a suitable unit isn't found
+    return f'{avg_in_kb}KiB'
 
 
-def get_repo_languages(repos: list) -> dict:
+def get_repo_languages(repositories: list) -> dict:
     """
     Return the languages used in repositories, sorted by usage.
 
     Args:
-        repos: The repositories
+        repositories: The repositories
 
     Returns: The sorted usage of repo languages
 

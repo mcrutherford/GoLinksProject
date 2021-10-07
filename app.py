@@ -4,6 +4,7 @@ Author: Mark Rutherford
 Created: 10/6/2021 5:29 PM
 """
 import flask
+from statistics import mean
 
 import utilities
 
@@ -17,15 +18,22 @@ def get_user_stats():
     if forked is None:
         forked = False
 
-    repos = []
+    # Get all of the user's repositories
+    repositories = utilities.get_user_repositories(username)
+
+    # Filter out forked repositories if necessary
+    if forked is False:
+        repos = [repo for repo in repositories if repo.fork is False]
+
+    # Create and return the statistics
     user_stats = {
         'Username': username,
         'Forked': forked,
-        'Repositories': utilities.get_total_repositories(username),
-        'TotalStargazers': utilities.get_total_stargazers(repos),
-        'TotalForkCount': utilities.get_total_fork_count(repos),
-        'AverageRepoSize': utilities.get_average_repo_size(repos),
-        'Languages': utilities.get_repo_languages(repos),
+        'Repositories': len(repositories),
+        'TotalStargazers': mean([repo.stargazers_count for repo in repositories]),
+        'TotalForkCount': sum([repo.fork for repo in repositories]),
+        'AverageRepoSize': utilities.get_average_repo_size(repositories),
+        'Languages': utilities.get_repo_languages(repositories),
     }
     return flask.jsonify(user_stats)
 
