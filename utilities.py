@@ -7,6 +7,7 @@ import flask
 import requests
 from typing import Optional
 from statistics import mean
+from collections import defaultdict
 
 
 class Repository:
@@ -140,9 +141,9 @@ def get_average_repo_size(repositories: list[Repository]) -> str:
     return f'{avg_in_kb}KiB'
 
 
-def get_repo_languages(repositories: list) -> dict:
+def get_repo_languages(repositories: list) -> list[list[str, int]]:
     """
-    Return the languages used in repositories, sorted by usage.
+    Return the languages used in repositories.
 
     Args:
         repositories: The repositories
@@ -150,7 +151,19 @@ def get_repo_languages(repositories: list) -> dict:
     Returns: The sorted usage of repo languages
 
     """
-    return {}
+    # Using a defaultdict avoids having to use if statements to avoid KeyErrors
+    languages = defaultdict(int)
+
+    # Sum all of the repository languages
+    for repo in repositories:
+        for language, usage in repo.languages.items():
+            languages[language] += usage
+
+    # Convert to a list (which has order) and sort it. More compatible than sorting a dictionary
+    language_list = list(languages.items())
+    language_list.sort(key=lambda x: x[1], reverse=True)
+
+    return language_list
 
 
 if __name__ == '__main__':
