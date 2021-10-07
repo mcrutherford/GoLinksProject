@@ -4,6 +4,49 @@ Author: Mark Rutherford
 Created: 10/6/2021 6:02 PM
 """
 import flask
+import requests
+from typing import Optional
+
+
+class Repository:
+    """
+    An class representing a single github repository. Fields are None until data is provided.
+    """
+    def __init__(self, github_json=None):
+        """
+        Instantiate the Repository object. If passed the json from a github api call, it will create all relevant
+        fields.
+
+        Args:
+            github_json: (OPTIONAL) The json representing a repository from a github api call
+        """
+        # Unique id of the repo
+        self.id: Optional[int] = github_json['id'] if github_json else None
+
+        # Full name of the repo
+        self.full_name: Optional[str] = github_json['full_name'] if github_json else None
+
+        # Whether the repo is a fork
+        self.fork: Optional[bool] = github_json['fork'] if github_json else None
+
+        # The amount of stargazers for this repo
+        self.stargazers_count: Optional[int] = github_json['stargazers_count'] if github_json else None
+
+        # The amount of forks of this repo
+        self.forks: Optional[int] = github_json['forks'] if github_json else None
+        self.forks_count: Optional[int] = github_json['forks_count'] if github_json else None  # TODO What is the difference?
+
+        # The languages used in the repo, by number of lines
+        #self.languages = requests.get(github_json['languages_url']).json() if github_json else None
+
+        # The size of the repo, in kilobytes
+        self.size: Optional[int] = github_json['size'] if github_json else None
+
+    def __str__(self):
+        return self.full_name
+
+    def __repr__(self):
+        return f'{self.id} {self.full_name}'
 
 
 def get_request_arg(request: flask.Request, arg_name: str, arg_type, required=False):
@@ -34,17 +77,31 @@ def get_request_arg(request: flask.Request, arg_name: str, arg_type, required=Fa
         return None
 
 
-def get_total_repositories(username: str) -> int:
+def get_user_repositories(username: str) -> list[Repository]:
     """
-    Retrieve the total github repositories for a specific user.
+    Retrieve the github repositories for a specific user.
 
     Args:
         username: The github username
 
-    Returns: The number of github repositories for a user.
+    Returns: The github repositories for the user.
 
     """
-    return 0
+    api_responses_per_page = 100  # Github currently has a max limit of 100 responses per page, though this could change
+    api_page = 1  # pages start at 1, not 0
+    repos: list[Repository] = []
+
+    response = True  # Initialize to true to start the first loop. Will be a dictionary afterwards
+    while response:
+        query = {'per_page': api_responses_per_page, 'page': api_page}
+        response = requests.get(f"https://api.github.com/users/{username}/repos", params=query).json()
+
+        # Convert to Repository objects and add to repos
+        for repo_json in response:
+            repos.append(Repository(repo_json))
+
+        api_page += 1  # Move to the next page
+    return repos
 
 
 def get_total_stargazers(repos: list) -> int:
@@ -97,3 +154,7 @@ def get_repo_languages(repos: list) -> dict:
 
     """
     return {}
+
+
+if __name__ == '__main__':
+    get_user_repositories('mcrutherford')
