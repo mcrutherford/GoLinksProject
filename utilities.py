@@ -5,9 +5,17 @@ Created: 10/6/2021 6:02 PM
 """
 import flask
 import requests
+import os
 from typing import Optional
 from statistics import mean
 from collections import defaultdict
+from requests.auth import HTTPBasicAuth
+from dotenv import load_dotenv
+
+
+load_dotenv()
+GITHUB_USERNAME = os.getenv('GITHUB_USERNAME')
+GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 
 
 class Repository:
@@ -39,7 +47,7 @@ class Repository:
         self.forks_count: Optional[int] = github_json['forks_count'] if github_json else None  # TODO What is the difference?
 
         # The languages used in the repo, by number of lines
-        self.languages = requests.get(github_json['languages_url']).json() if github_json else None
+        self.languages = requests.get(github_json['languages_url'], auth=HTTPBasicAuth(username=GITHUB_USERNAME, password=GITHUB_TOKEN)).json() if github_json else None
 
         # The size of the repo, in kilobytes
         self.size: Optional[int] = github_json['size'] if github_json else None
@@ -108,7 +116,7 @@ def get_user_repositories(username: str) -> list[Repository]:
     response = True  # Initialize to true to start the first loop. Will be a dictionary afterwards
     while response:
         query = {'per_page': api_responses_per_page, 'page': api_page}
-        response = requests.get(f"https://api.github.com/users/{username}/repos", params=query).json()
+        response = requests.get(f"https://api.github.com/users/{username}/repos", params=query, auth=HTTPBasicAuth(username=GITHUB_USERNAME, password=GITHUB_TOKEN)).json()
 
         # Convert to Repository objects and add to repos
         for repo_json in response:
@@ -167,4 +175,4 @@ def get_repo_languages(repositories: list) -> list[list[str, int]]:
 
 
 if __name__ == '__main__':
-    get_user_repositories('mcrutherford')
+    print(get_user_repositories('mcrutherford'))
