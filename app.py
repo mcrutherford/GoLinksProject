@@ -10,6 +10,11 @@ import utilities
 app = flask.Flask(__name__)
 
 
+@app.route('/', methods=['GET'])
+def get_index():
+    return flask.current_app.send_static_file('index.html')
+
+
 @app.route('/getuserstats', methods=['GET'])
 def get_user_stats():
     username = utilities.get_request_arg(request=flask.request, arg_name='username', required=True)

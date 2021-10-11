@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+
+<h1>Get a GitHub user's aggregated stats</h1>
+
+<form action="/getuserstats" method="get" target="_blank">
+  <label for="username">Username:</label>
+  <input type="text" id="username" name="username"><br><br>
+  <label for="forked">Ignore forked repositories:</label>
+  <input type="checkbox" id="forked" name="forked" value="false"><br><br>
+  <input type="submit" value="Submit">
+</form>
+
+<p>Completed form input will be sent to <a href="/getuserstats">/getuserstats</a>.</p>
+
+</body>
+</html>

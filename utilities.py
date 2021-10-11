@@ -105,13 +105,17 @@ def get_user_repositories(username: str, show_forked: bool) -> list[Repository]:
     api_page = 1  # pages start at 1, not 0
     repos: list[Repository] = []
 
-    response = True  # Initialize to true to start the first loop. Will be a dictionary afterwards
-    while response:
+    response_json = True  # Initialize to true to start the first loop. Will be a dictionary afterwards
+    while response_json:
         query = {'per_page': api_responses_per_page, 'page': api_page}
-        response = requests.get(f"https://api.github.com/users/{username}/repos", params=query, auth=HTTPBasicAuth(username=GITHUB_USERNAME, password=GITHUB_TOKEN)).json()
+        response = requests.get(f"https://api.github.com/users/{username}/repos", params=query, auth=HTTPBasicAuth(username=GITHUB_USERNAME, password=GITHUB_TOKEN))
+        response_json = response.json()
 
+        if response.status_code != 200:
+            flask.abort(response.status_code)
+            return []
         # Convert to Repository objects and add to repos
-        for repo_json in response:
+        for repo_json in response_json:
             if show_forked or not repo_json['fork']:
                 repos.append(Repository(repo_json))
 
