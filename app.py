@@ -29,7 +29,6 @@ def get_user_stats():
 
     # Create and return the statistics
     user_stats = {
-        'Show forked': show_forked,
         'Repositories': len(repositories),
         'TotalStargazers': sum([repo.stargazers_count for repo in repositories]),
         'TotalForkCount': sum([repo.forks_count for repo in repositories]),
