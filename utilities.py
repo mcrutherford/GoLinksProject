@@ -43,8 +43,7 @@ class Repository:
         self.stargazers_count: Optional[int] = github_json['stargazers_count'] if github_json else None
 
         # The amount of forks of this repo
-        self.forks: Optional[int] = github_json['forks'] if github_json else None
-        self.forks_count: Optional[int] = github_json['forks_count'] if github_json else None  # TODO What is the difference?
+        self.forks_count: Optional[int] = github_json['forks_count'] if github_json else None
 
         # The languages used in the repo, by number of lines
         self.languages = requests.get(github_json['languages_url'], auth=HTTPBasicAuth(username=GITHUB_USERNAME, password=GITHUB_TOKEN)).json() if github_json else None
@@ -71,40 +70,33 @@ class Repository:
         return f'{self.id} {self.full_name}'
 
 
-def get_request_arg(request: flask.Request, arg_name: str, arg_type, required=False):
+def get_request_arg(request: flask.Request, arg_name: str, required=False):
     """
-    Retrieve an argument of a specific type from a request.
+    Retrieve an argument from a request.
 
     Args:
         request: The flask request
         arg_name: The parameter name
-        arg_type: The parameter type
         required: Whether the argument is mandatory
 
-    Returns: The parameter converted to type arg_type
+    Returns: The request parameter
 
     """
     if arg_name in request.args:
-        arg = request.args[arg_name]
-        try:
-            arg = arg_type(arg)
-            return arg
-        except (ValueError, TypeError) as e:
-            flask.abort(400)
-            return
+        return request.args[arg_name]
     elif required:
         flask.abort(400)
-        return
-    else:
-        return None
+
+    return None
 
 
-def get_user_repositories(username: str) -> list[Repository]:
+def get_user_repositories(username: str, show_forked: bool) -> list[Repository]:
     """
     Retrieve the github repositories for a specific user.
 
     Args:
         username: The github username
+        show_forked: Whether to keep or discard forked repos
 
     Returns: The github repositories for the user.
 
@@ -120,7 +112,8 @@ def get_user_repositories(username: str) -> list[Repository]:
 
         # Convert to Repository objects and add to repos
         for repo_json in response:
-            repos.append(Repository(repo_json))
+            if show_forked or not repo_json['fork']:
+                repos.append(Repository(repo_json))
 
         api_page += 1  # Move to the next page
     return repos
