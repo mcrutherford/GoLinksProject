@@ -2,6 +2,8 @@
 File: app.py
 Author: Mark Rutherford
 Created: 10/6/2021 5:29 PM
+
+Flask entrypoint. Contains all routes.
 """
 import flask
 
@@ -10,13 +12,27 @@ import utilities
 app = flask.Flask(__name__)
 
 
+# Index
 @app.route('/', methods=['GET'])
 def get_index():
+    """
+    Serve the static index.html form to test the /getuserstats route.
+
+    Returns: static/index.html
+
+    """
     return flask.current_app.send_static_file('index.html')
 
 
+# GitHub user aggregated stats API
 @app.route('/getuserstats', methods=['GET'])
 def get_user_stats():
+    """
+    Provided a GitHub username, calculate and return aggregated statistics about the user's repositories.
+
+    Returns: The aggregated statistics
+
+    """
     username = utilities.get_request_arg(request=flask.request, arg_name='username', required=True)
     show_forked = utilities.get_request_arg(request=flask.request, arg_name='forked')
 

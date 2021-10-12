@@ -2,6 +2,8 @@
 File: utilities.py
 Author: Mark Rutherford
 Created: 10/6/2021 6:02 PM
+
+Utility functions to support the main flask routes.
 """
 import flask
 import requests
@@ -13,6 +15,7 @@ from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
 
 
+# Load the .env variables
 load_dotenv()
 GITHUB_USERNAME = os.getenv('GITHUB_USERNAME')
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
@@ -21,6 +24,8 @@ GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 class Repository:
     """
     An class representing a single github repository. Fields are None until data is provided.
+
+    If the GitHub API changes, the only alterations needed will be here.
     """
     def __init__(self, github_json=None):
         """
@@ -169,7 +174,3 @@ def get_repo_languages(repositories: list) -> list[list[str, int]]:
     language_list.sort(key=lambda x: x[1], reverse=True)
 
     return language_list
-
-
-if __name__ == '__main__':
-    print(get_user_repositories('mcrutherford'))
