@@ -4,7 +4,7 @@ This is a programming task for a position at go/links. Running this code starts 
 that aggregates GitHub user repository statistics, with the ability to filter out forked 
 repositories.
 
-This code should be easily extensible to add other features with relative ease, and will 
+This code is easily extensible to add other features with relative ease, and will 
 only require minor alterations if the GitHub API changes.
 
 ## Installation
@@ -31,15 +31,16 @@ GITHUB_TOKEN=ghp_abcdefghijklmnopqrstuvwxyz
 ## Usage
 
 ### App
-Run app.py using Python, likely
+Run app.py using Python
 
 ```bash
 python ./app.py
 ```
 
 Flask defaults to running the web server on port 5000, though the exact link and port should be in the console 
-after the web server starts. This link is likely [http://127.0.0.1:5000/](http://127.0.0.1:5000/) with 
-the API endpoint hosted at [http://127.0.0.1:5000/getuserstats](http://127.0.0.1:5000/getuserstats).
+after the web server starts. The index page (with an API form) is likely at 
+[http://127.0.0.1:5000/](http://127.0.0.1:5000/) with the API endpoint hosted at 
+[http://127.0.0.1:5000/getuserstats](http://127.0.0.1:5000/getuserstats).
 
 ### API
 The /getuserstats API endpoint expects a GET request with the parameter `username`, and an optional `forked` parameter. 
